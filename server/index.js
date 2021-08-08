@@ -15,7 +15,7 @@ app.use(express.json());
 app.get("/getURL", (req, res) => {
   try {
     (async () => {
-      const browser = await puppeteer.launch({ headless: false });
+      const browser = await puppeteer.launch({ headless: true });
       const page = await browser.newPage();
       const { link, dates } = await getDates(page, req.query.act);
       await browser.close();
