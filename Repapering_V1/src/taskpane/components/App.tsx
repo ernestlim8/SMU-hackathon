@@ -7,6 +7,8 @@ import Progress from "./Progress";
 import "../../../assets/icon-16.png";
 import "../../../assets/icon-32.png";
 import "../../../assets/icon-80.png";
+
+import { ActToUrlMap } from "../../ActToUrlMap";
 /* global Word */
 
 export interface AppProps {
@@ -52,6 +54,28 @@ export default class App extends React.Component<AppProps, AppState> {
     });
   };
 
+  link = async () => {
+    console.log("Called add links");
+    return Word.run(async (context) => {
+      var body = context.document.body;
+      ActToUrlMap.forEach(async (value, key) => {
+        let searchResult = body.search(key);
+        searchResult.load("length");
+        await context.sync();
+        for (let act of searchResult.items) {
+          act.set({
+            hyperlink: value,
+            font: {
+              underline: "None",
+              color: "Black",
+            },
+          });
+        }
+        await context.sync();
+      });
+    });
+  };
+
   render() {
     const { title, isOfficeInitialized } = this.props;
 
@@ -70,6 +94,9 @@ export default class App extends React.Component<AppProps, AppState> {
           </p>
           <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.click}>
             Run
+          </DefaultButton>
+          <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.link}>
+            Add Links
           </DefaultButton>
         </HeroList>
       </div>
