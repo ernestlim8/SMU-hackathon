@@ -79,13 +79,28 @@ export default class App extends React.Component<AppProps, AppState> {
         let sectionNumberRegex = "( [0-9]{1,}[A-Z]{0,})";
         let actRegex = `${actName}${sectionNumberRegex}{0,}`;
         let searchResult = body.search(actRegex, { matchWildcards: true });
-        searchResult.load("length");
+        searchResult.load("length, text");
+        await context.sync();
+        // Skip expensive operations below if no instances of actName is found.
+        if (searchResult.items.length === 0) {
+          return;
+        }
         let link = await this.findURL(actName);
         console.log(link.url);
-        await context.sync();
         for (let act of searchResult.items) {
+          let url = link.url;
+          // Enter branch if contains section number.
+          if (act.text.length > actName.length) {
+            const section = act.text.split(" ").pop();
+            // Example url: https://sso.agc.gov.sg/Act/AA2004#pr12A-
+            //
+            // It is okay if the section number is invalid. In this case
+            // the url (although unnecessarily longer) will still
+            // go to the page of the act.
+            url = `${link.url}#pr${section}-`;
+          }
           act.set({
-            hyperlink: link.url,
+            hyperlink: url,
             font: {
               color: "Black",
             },
