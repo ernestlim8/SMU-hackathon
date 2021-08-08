@@ -87,9 +87,10 @@ export default class App extends React.Component<AppProps, AppState> {
         if (searchResult.items.length === 0) {
           return;
         }
-        let { link: url, changed } = await this.findURL(actName, dateString);
+        let result = await this.findURL(actName, dateString);
 
         for (let act of searchResult.items) {
+          let url = result.url;
           // Enter branch if contains section number.
           if (act.text.length > actName.length) {
             const section = act.text.split(" ").pop();
@@ -106,7 +107,7 @@ export default class App extends React.Component<AppProps, AppState> {
               color: "Black",
             },
           });
-          if (changed) {
+          if (result.changed) {
             act.font.highlightColor = "#FFFF00";
           }
         }
