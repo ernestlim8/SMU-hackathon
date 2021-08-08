@@ -37,18 +37,13 @@ export default class App extends React.Component<AppProps, AppState> {
 
   findURL = async (act: string) => {
     console.log(act)
-    axios.get("http://localhost:3001/getURL", {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
-      },
+    const promise = axios.get("http://localhost:3001/getURL", {
       params: {
         act: act
       }
     })
-      .then(res => {
-        console.log(res.data)
-      })
+    const data = promise.then((res) => res.data)
+    return data
   }
 
   click = async () => {
@@ -67,8 +62,6 @@ export default class App extends React.Component<AppProps, AppState> {
       }
       
       this.setState({ listItems: newItems });
-      // need to loop here
-      await this.findURL("196A");
       await context.sync();
     });
   };
@@ -80,10 +73,14 @@ export default class App extends React.Component<AppProps, AppState> {
       ActToUrlMap.forEach(async (value, key) => {
         let searchResult = body.search(key);
         searchResult.load("length");
+        // console.log(key);
+        console.log(value);
+        let link = await this.findURL(key)
+        console.log(link.url);
         await context.sync();
         for (let act of searchResult.items) {
           act.set({
-            hyperlink: value,
+            hyperlink: link.url,
             font: {
               underline: "None",
               color: "Black",
