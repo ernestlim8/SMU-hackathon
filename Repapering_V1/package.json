@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@fluentui/react": "^8.16.0",
+    "axios": "^0.21.1",
     "core-js": "^3.9.1",
     "es6-promise": "^4.2.8",
     "puppeteer": "^10.2.0",

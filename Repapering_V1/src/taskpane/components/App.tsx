@@ -1,4 +1,5 @@
 import * as React from "react";
+import axios from "axios";
 import { DefaultButton } from "@fluentui/react";
 import Header from "./Header";
 import HeroList, { HeroListItem } from "./HeroList";
@@ -32,6 +33,22 @@ export default class App extends React.Component<AppProps, AppState> {
     });
   }
 
+  findURL = async (act: string) => {
+    console.log(act)
+    axios.get("http://localhost:3001/getURL", {
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      },
+      params: {
+        act: act
+      }
+    })
+      .then(res => {
+        console.log(res.data)
+      })
+  }
+
   click = async () => {
     return Word.run(async (context) => {
       let result = context.document.body.search("[(]*[)]", { matchWildcards: true });
@@ -46,8 +63,10 @@ export default class App extends React.Component<AppProps, AppState> {
         result.items[i].font.highlightColor = "#FFFF00";
         newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1) }];
       }
-
+      
       this.setState({ listItems: newItems });
+      // need to loop here
+      await this.findURL("196A");
       await context.sync();
     });
   };
