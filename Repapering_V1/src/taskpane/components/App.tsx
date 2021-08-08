@@ -9,7 +9,7 @@ import "../../../assets/icon-16.png";
 import "../../../assets/icon-32.png";
 import "../../../assets/icon-80.png";
 
-import { ActToUrlMap } from "../../ActToUrlMap";
+import { ActList } from "../../Data";
 /* global Word */
 
 export interface AppProps {
@@ -36,15 +36,15 @@ export default class App extends React.Component<AppProps, AppState> {
   }
 
   findURL = async (act: string) => {
-    console.log(act)
+    console.log(act);
     const promise = axios.get("http://localhost:3001/getURL", {
       params: {
-        act: act
-      }
-    })
-    const data = promise.then((res) => res.data)
-    return data
-  }
+        act: act,
+      },
+    });
+    const data = promise.then((res) => res.data);
+    return data;
+  };
 
   click = async () => {
     return Word.run(async (context) => {
@@ -60,7 +60,7 @@ export default class App extends React.Component<AppProps, AppState> {
         result.items[i].font.highlightColor = "#FFFF00";
         newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1) }];
       }
-      
+
       this.setState({ listItems: newItems });
       await context.sync();
     });
@@ -70,19 +70,38 @@ export default class App extends React.Component<AppProps, AppState> {
     console.log("Called add links");
     return Word.run(async (context) => {
       var body = context.document.body;
-      ActToUrlMap.forEach(async (value, key) => {
-        let searchResult = body.search(key);
-        searchResult.load("length");
-        // console.log(key);
-        console.log(value);
-        let link = await this.findURL(key)
-        console.log(link.url);
+      ActList.forEach(async (actName) => {
+        // Regex to include section number with Act name.
+        //
+        // Example: Accountants Act, Accountants Act 11, Accountant Acts 12B
+        // should all be returned in searchResult.
+        // Accountant Acts B should NOT be returned.
+        let sectionNumberRegex = "( [0-9]{1,}[A-Z]{0,})";
+        let actRegex = `${actName}${sectionNumberRegex}{0,}`;
+        let searchResult = body.search(actRegex, { matchWildcards: true });
+        searchResult.load("length, text");
         await context.sync();
+        // Skip expensive operations below if no instances of actName is found.
+        if (searchResult.items.length === 0) {
+          return;
+        }
+        let link = await this.findURL(actName);
+        console.log(link.url);
         for (let act of searchResult.items) {
+          let url = link.url;
+          // Enter branch if contains section number.
+          if (act.text.length > actName.length) {
+            const section = act.text.split(" ").pop();
+            // Example url: https://sso.agc.gov.sg/Act/AA2004#pr12A-
+            //
+            // It is okay if the section number is invalid. In this case
+            // the url (although unnecessarily longer) will still
+            // go to the page of the act.
+            url = `${link.url}#pr${section}-`;
+          }
           act.set({
-            hyperlink: link.url,
+            hyperlink: url,
             font: {
-              underline: "None",
               color: "Black",
             },
           });
