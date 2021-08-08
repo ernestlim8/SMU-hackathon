@@ -66,7 +66,6 @@ export default class App extends React.Component<AppProps, AppState> {
           act.set({
             hyperlink: value,
             font: {
-              underline: "None",
               color: "Black",
             },
           });
