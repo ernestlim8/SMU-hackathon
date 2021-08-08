@@ -35,11 +35,11 @@ export default class App extends React.Component<AppProps, AppState> {
     });
   }
 
-  findURL = async (act: string) => {
-    console.log(act);
+  findURL = async (act: string, date: string) => {
     const promise = axios.get("http://localhost:3001/getURL", {
       params: {
         act: act,
+        date: date,
       },
     });
     const data = promise.then((res) => res.data);
@@ -70,6 +70,8 @@ export default class App extends React.Component<AppProps, AppState> {
     console.log("Called add links");
     return Word.run(async (context) => {
       var body = context.document.body;
+      // hardcoded
+      let dateString = new Date(2021, 1, 1).toDateString();
       ActList.forEach(async (actName) => {
         // Regex to include section number with Act name.
         //
@@ -85,10 +87,10 @@ export default class App extends React.Component<AppProps, AppState> {
         if (searchResult.items.length === 0) {
           return;
         }
-        let link = await this.findURL(actName);
-        console.log(link.url);
+        let result = await this.findURL(actName, dateString);
+
         for (let act of searchResult.items) {
-          let url = link.url;
+          let url = result.url;
           // Enter branch if contains section number.
           if (act.text.length > actName.length) {
             const section = act.text.split(" ").pop();
@@ -97,7 +99,7 @@ export default class App extends React.Component<AppProps, AppState> {
             // It is okay if the section number is invalid. In this case
             // the url (although unnecessarily longer) will still
             // go to the page of the act.
-            url = `${link.url}#pr${section}-`;
+            url = `${url}#pr${section}-`;
           }
           act.set({
             hyperlink: url,
@@ -105,6 +107,9 @@ export default class App extends React.Component<AppProps, AppState> {
               color: "Black",
             },
           });
+          if (result.changed) {
+            act.font.highlightColor = "#FFFF00";
+          }
         }
         await context.sync();
       });
