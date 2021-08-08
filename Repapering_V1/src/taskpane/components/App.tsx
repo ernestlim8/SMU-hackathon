@@ -59,7 +59,14 @@ export default class App extends React.Component<AppProps, AppState> {
     return Word.run(async (context) => {
       var body = context.document.body;
       ActToUrlMap.forEach(async (value, key) => {
-        let searchResult = body.search(key);
+        // Regex to include section number with Act name.
+        //
+        // Example: Accountants Act, Accountants Act 11, Accountant Acts 12B
+        // should all be returned in searchResult.
+        // Accountant Acts B should NOT be returned.
+        let sectionNumberRegex = "( [0-9]{1,}[A-Z]{0,})";
+        let actRegex = `${key}${sectionNumberRegex}{0,}`;
+        let searchResult = body.search(actRegex, { matchWildcards: true });
         searchResult.load("length");
         await context.sync();
         for (let act of searchResult.items) {
