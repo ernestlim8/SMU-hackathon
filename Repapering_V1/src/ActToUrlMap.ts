@@ -1,1 +1,1 @@
-export const ActToUrlMap = new Map<string, string>([["Accountants Act", "https://sso.agc.gov.sg/Act/AA2004"]]);
+export const ActToUrlMap = new Map<string, string>([["Accountants Act", "https://google.com/"]]);

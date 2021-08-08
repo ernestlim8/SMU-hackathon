@@ -1,4 +1,5 @@
 import * as React from "react";
+import axios from "axios";
 import { DefaultButton } from "@fluentui/react";
 import Header from "./Header";
 import HeroList, { HeroListItem } from "./HeroList";
@@ -34,6 +35,17 @@ export default class App extends React.Component<AppProps, AppState> {
     });
   }
 
+  findURL = async (act: string) => {
+    console.log(act)
+    const promise = axios.get("http://localhost:3001/getURL", {
+      params: {
+        act: act
+      }
+    })
+    const data = promise.then((res) => res.data)
+    return data
+  }
+
   click = async () => {
     return Word.run(async (context) => {
       let result = context.document.body.search("[(]*[)]", { matchWildcards: true });
@@ -48,7 +60,7 @@ export default class App extends React.Component<AppProps, AppState> {
         result.items[i].font.highlightColor = "#FFFF00";
         newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1) }];
       }
-
+      
       this.setState({ listItems: newItems });
       await context.sync();
     });
@@ -61,10 +73,14 @@ export default class App extends React.Component<AppProps, AppState> {
       ActToUrlMap.forEach(async (value, key) => {
         let searchResult = body.search(key);
         searchResult.load("length");
+        // console.log(key);
+        console.log(value);
+        let link = await this.findURL(key)
+        console.log(link.url);
         await context.sync();
         for (let act of searchResult.items) {
           act.set({
-            hyperlink: value,
+            hyperlink: link.url,
             font: {
               underline: "None",
               color: "Black",
