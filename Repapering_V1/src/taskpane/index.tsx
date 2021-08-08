@@ -5,8 +5,6 @@ import { ThemeProvider } from "@fluentui/react";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { HashRouter as Router, Route } from "react-router-dom";
-import LawDetail from "./components/LawDetail";
-
 /* global document, Office, module, require */
 
 initializeIcons();
@@ -27,8 +25,7 @@ const render = (Component) => (
 Office.initialize = () => {
   isOfficeInitialized = true;
   ReactDOM.render(
-    <Router>
-      <Route path="/1">{render(LawDetail)}</Route>
+     <Router> 
       <Route exact path="">
         {render(App)}
       </Route>
