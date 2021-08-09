@@ -1,4 +1,4 @@
-import {ActList} from "./Data"
+import {ActList} from "./ActNames"
 
 const findAbb = () => {
     var abbMap = {};

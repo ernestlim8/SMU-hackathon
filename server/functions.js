@@ -4,7 +4,6 @@ const getDates = async (page, phrase) => {
   await page.goto(
     `https://sso.agc.gov.sg/Search/Content?Phrase=${phrase}&PhraseType=AllTheseWords&In=InForce_Act_SL&Within=title`
   );
-  console.log(phrase);
   const link = await page.$eval("#searchTable div.row a", (el) => el.href);
   await page.goto(link);
 
@@ -21,6 +20,14 @@ const getDates = async (page, phrase) => {
   await page.click(".toc-panel.mobile-timeline a");
   return { link, dates };
 };
+
+const getActURL = async (page, phrase) => {
+  await page.goto(
+    `https://sso.agc.gov.sg/Search/Content?Phrase=${phrase}&PhraseType=AllTheseWords&In=InForce_Act_SL&Within=title`
+  );
+  const link = await page.$eval("#searchTable div.row a", (el) => el.href);
+  return link;
+}
 
 const getRelevantActs = async (page, url) => {
   await page.goto(url);
@@ -49,7 +56,18 @@ const getActs = async (page) => {
   return result;
 }
 
+const getURLs = async (page) => {
+  let cache = {};
+  let arr = await getActs(page);
+  for (let i = 0; i < arr.length; i++) {
+    let link = await getActURL(page, arr[i]);
+    cache[arr[i]] = link;
+  }
+  return cache;
+}
+
 module.exports = {
   getDates,
   getActs,
+  getURLs,
 };

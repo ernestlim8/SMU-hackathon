@@ -9,8 +9,9 @@ import "../../../assets/icon-16.png";
 import "../../../assets/icon-32.png";
 import "../../../assets/icon-80.png";
 
-import { ActList } from "../../Data/Data";
+import { ActList } from "../../Data/ActNames";
 import { Abbreviations } from "../../Data/Abbreviations";
+// import { URLList } from "../../Data/ActURLs"; 
 
 /* global Word */
 
@@ -74,7 +75,7 @@ export default class App extends React.Component<AppProps, AppState> {
       var body = context.document.body;
       // Make request to backend for all the URLS
       // const findURLs = async () => {
-      //       const promise = axios.get("http://localhost:3001/getAllURL");
+      //       const promise = axios.get("http://localhost:3001/getAllActNames");
       //       const data = promise.then((res) => res.data);
       //       return data;
       //   };
@@ -123,6 +124,8 @@ export default class App extends React.Component<AppProps, AppState> {
         if (searchResult.items.length > 0) {
           let result;
           if (actName in Abbreviations){
+            // For demo purposes using the database of URLs:
+            // result = {url: URLList[actName], changed: false};
             result = await this.findURL(actName, dateString);
             abbURLMap[Abbreviations[actName]] = result;
           } else {
