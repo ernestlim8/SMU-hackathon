@@ -84,23 +84,28 @@ export default class App extends React.Component<AppProps, AppState> {
 
       // change ActList to acts to use API call
       for (let actName of ActList) {
-        // Regex to include section number with Act name.
-        //
-        // Example: Accountants Act, Accountants Act 11, Accountant Acts 12B
-        // should all be returned in searchResult.
-        // Accountant Acts B should NOT be returned.
+        let allInstances: Word.Range[];
+        const sectionNumberRegex = "[0-9]{1,}[A-Z]{0,}";
+        const nonBreakingSpace = String.fromCharCode(160);
+        const possibleFormats = [
+          // Just the act name
+          ``,
+          `(Section ${sectionNumberRegex} of the )`,
+          `(Section ${sectionNumberRegex} )`,
+          `(s${nonBreakingSpace}${sectionNumberRegex} of the )`,
+          `(s${nonBreakingSpace}${sectionNumberRegex} )`,
+        ];
+        for (let section in possibleFormats) {
+          const searchResult = body.search(`${section}${actName}`);
+          searchResult.load("length, text");
+          await context.sync();
+          allInstances.concat(searchResult.items);
+        }
 
-        let sectionNumberRegex = "( [0-9]{1,}[A-Z]{0,})";
-        let actRegex = `${actName}${sectionNumberRegex}{0,}`;
-
-        let searchResult = body.search(actRegex, { matchWildcards: true });
-        searchResult.load("length, text");
-        await context.sync();
-
-        // Skip expensive operations below if no instances of actName is found.
-        if (searchResult.items.length > 0) {
+        // Skip expensive operations below if no instances is found.
+        if (allInstances.length > 0) {
           let result = await this.findURL(actName, dateString);
-          for (let act of searchResult.items) {
+          for (let act of allInstances) {
             let url = result.url;
             // Enter branch if contains section number.
             if (act.text.length > actName.length) {
