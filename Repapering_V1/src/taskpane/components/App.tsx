@@ -70,8 +70,20 @@ export default class App extends React.Component<AppProps, AppState> {
     console.log("Called add links");
     return Word.run(async (context) => {
       var body = context.document.body;
+      
+      // Make request to backend for all the URLS
+      // const findURLs = async () => {
+      //       const promise = axios.get("http://localhost:3001/getAllURL");
+      //       const data = promise.then((res) => res.data);
+      //       return data;
+      //   };
+      // let arr = await findURLs();
+      // let acts = arr.acts
+
       // hardcoded
       let dateString = new Date(2021, 1, 1).toDateString();
+      
+      // change ActList to acts to use API call
       ActList.forEach(async (actName) => {
         // Regex to include section number with Act name.
         //
