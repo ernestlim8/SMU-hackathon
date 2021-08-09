@@ -9,7 +9,9 @@ import "../../../assets/icon-16.png";
 import "../../../assets/icon-32.png";
 import "../../../assets/icon-80.png";
 
-import { ActList } from "../../Data";
+import { ActList } from "../../Data/Data";
+import { Abbreviations } from "../../Data/Abbreviations";
+
 /* global Word */
 
 export interface AppProps {
@@ -79,11 +81,29 @@ export default class App extends React.Component<AppProps, AppState> {
       // let arr = await findURLs();
       // let acts = arr.acts
 
-      // hardcoded
-      let dateString = new Date(2021, 1, 1).toDateString();
+      let date = `([0-9]{1,2} [a-zA-Z]* [0-9]{4})`
 
+      let dateSearch = body.search(date, {matchWildcards: true});
+      dateSearch.load("length, text");
+
+      await context.sync()
+      let dateString = new Date(2021, 1, 1).toDateString(); 
+      if (dateSearch.items.length > 0){
+        dateString = dateSearch.items[0].text;
+      }
+      
+      // unique list of all occcurrences of unique act names and abbreviations 
+      // Assumption: The full act name is referenced before the abbreviation is used
+      let actAbbArr = ActList.concat(Object.values(Abbreviations));
+      actAbbArr = actAbbArr.filter((value, index, self) => {
+        return self.indexOf(value) === index;
+      });
+
+      // object to store mapping between abbreviation and URL
+      let abbURLMap = {};
+      
       // change ActList to acts to use API call
-      for (let actName of ActList) {
+      for (let actName of actAbbArr) {
         // Regex to include section number with Act name.
         //
         // Example: Accountants Act, Accountants Act 11, Accountant Acts 12B
@@ -92,14 +112,23 @@ export default class App extends React.Component<AppProps, AppState> {
 
         let sectionNumberRegex = "( [0-9]{1,}[A-Z]{0,})";
         let actRegex = `${actName}${sectionNumberRegex}{0,}`;
-
-        let searchResult = body.search(actRegex, { matchWildcards: true });
+        
+        // Match whole world to make sure that abbreviations which are substrings in other abbreviations don't get caught.
+        // For example: Accountants Act: AA and Accounting and Corporate Regulatory Authority Act: ACRAA
+        let searchResult = body.search(actRegex, { matchWildcards: true, matchWholeWord: true });
         searchResult.load("length, text");
         await context.sync();
 
         // Skip expensive operations below if no instances of actName is found.
         if (searchResult.items.length > 0) {
-          let result = await this.findURL(actName, dateString);
+          let result;
+          if (actName in Abbreviations){
+            result = await this.findURL(actName, dateString);
+            abbURLMap[Abbreviations[actName]] = result;
+          } else {
+            result = abbURLMap[actName];
+          }
+          
           for (let act of searchResult.items) {
             let url = result.url;
             // Enter branch if contains section number.
@@ -112,22 +141,25 @@ export default class App extends React.Component<AppProps, AppState> {
               // go to the page of the act.
               url = `${url}#pr${section}-`;
             }
-            act.set({
-              hyperlink: url,
-              font: {
-                color: "Black",
-              },
-            });
-            if (result.changed) {
-              act.font.highlightColor = "#FFFF00";
-            }
+            this.formatURL(act, url, result.changed);
           }
         }
-
         await context.sync();
       }
     });
   };
+
+  formatURL = (act, url, changed) => {
+    act.set({
+      hyperlink: url,
+      font: {
+        color: "Black",
+      },
+    });
+    if (changed) {
+      act.font.highlightColor = "#FFFF00";
+    }
+  }
 
   render() {
     const { title, isOfficeInitialized } = this.props;

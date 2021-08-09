@@ -9,7 +9,8 @@
   "config": {
     "app_to_debug": "word",
     "app_type_to_debug": "desktop",
-    "dev_server_port": 3000
+    "dev_server_port": 3000,
+    "document": "https://nusu-my.sharepoint.com/:w:/r/personal/e0407584_u_nus_edu/_layouts/15/Doc.aspx?sourcedoc=%7B3A520199-6438-4CE2-8234-40C8777CDB71%7D&file=Document.docx&action=default&mobileredirect=true&DefaultItemOpen=1&ct=1628347990271&wdOrigin=OFFICECOM-WEB.MAIN.OTHER&cid=3b8582b4-19dd-4499-b1cb-53860b7cf179&wdaddindevserverport=3000&wdaddinmanifestfile=manifest.xml&wdaddinmanifestguid=0543416e-2e14-47e4-bcaf-1411d96e96de"
   },
   "scripts": {
     "build": "webpack -p --mode production --https false",
