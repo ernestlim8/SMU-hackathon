@@ -70,7 +70,6 @@ export default class App extends React.Component<AppProps, AppState> {
     console.log("Called add links");
     return Word.run(async (context) => {
       var body = context.document.body;
-      
       // Make request to backend for all the URLS
       // const findURLs = async () => {
       //       const promise = axios.get("http://localhost:3001/getAllURL");
@@ -82,49 +81,51 @@ export default class App extends React.Component<AppProps, AppState> {
 
       // hardcoded
       let dateString = new Date(2021, 1, 1).toDateString();
-      
+
       // change ActList to acts to use API call
-      ActList.forEach(async (actName) => {
+      for (let actName of ActList) {
         // Regex to include section number with Act name.
         //
         // Example: Accountants Act, Accountants Act 11, Accountant Acts 12B
         // should all be returned in searchResult.
         // Accountant Acts B should NOT be returned.
+
         let sectionNumberRegex = "( [0-9]{1,}[A-Z]{0,})";
         let actRegex = `${actName}${sectionNumberRegex}{0,}`;
+
         let searchResult = body.search(actRegex, { matchWildcards: true });
         searchResult.load("length, text");
         await context.sync();
-        // Skip expensive operations below if no instances of actName is found.
-        if (searchResult.items.length === 0) {
-          return;
-        }
-        let result = await this.findURL(actName, dateString);
 
-        for (let act of searchResult.items) {
-          let url = result.url;
-          // Enter branch if contains section number.
-          if (act.text.length > actName.length) {
-            const section = act.text.split(" ").pop();
-            // Example url: https://sso.agc.gov.sg/Act/AA2004#pr12A-
-            //
-            // It is okay if the section number is invalid. In this case
-            // the url (although unnecessarily longer) will still
-            // go to the page of the act.
-            url = `${url}#pr${section}-`;
-          }
-          act.set({
-            hyperlink: url,
-            font: {
-              color: "Black",
-            },
-          });
-          if (result.changed) {
-            act.font.highlightColor = "#FFFF00";
+        // Skip expensive operations below if no instances of actName is found.
+        if (searchResult.items.length > 0) {
+          let result = await this.findURL(actName, dateString);
+          for (let act of searchResult.items) {
+            let url = result.url;
+            // Enter branch if contains section number.
+            if (act.text.length > actName.length) {
+              const section = act.text.split(" ").pop();
+              // Example url: https://sso.agc.gov.sg/Act/AA2004#pr12A-
+              //
+              // It is okay if the section number is invalid. In this case
+              // the url (although unnecessarily longer) will still
+              // go to the page of the act.
+              url = `${url}#pr${section}-`;
+            }
+            act.set({
+              hyperlink: url,
+              font: {
+                color: "Black",
+              },
+            });
+            if (result.changed) {
+              act.font.highlightColor = "#FFFF00";
+            }
           }
         }
+
         await context.sync();
-      });
+      }
     });
   };
 
