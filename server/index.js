@@ -6,13 +6,13 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 
 const cors = require("cors");
-const { getDates, getActs } = require("./functions");
+const { getDates, getActs, getURLs } = require("./functions");
 
 app.use(cors());
 
 app.use(express.json());
 
-app.get("/getAllURL", (req, res) => {
+app.get("/getAllActNames", (req, res) => {
   try {
     (async () => {
       const browser = await puppeteer.launch({ headless: true });
@@ -22,6 +22,22 @@ app.get("/getAllURL", (req, res) => {
 
       // changed here will have to be checked against date first
       res.json({ acts: acts});
+    })();
+  } catch (err) {
+    console.log(err);
+  }
+});
+
+app.get("/getAllURLs", (req, res) => {
+  try {
+    (async () => {
+      const browser = await puppeteer.launch({ headless: true });
+      const page = await browser.newPage();
+      const urls = await getURLs(page);
+      await browser.close();
+
+      // changed here will have to be checked against date first
+      res.json({ urls: urls});
     })();
   } catch (err) {
     console.log(err);
