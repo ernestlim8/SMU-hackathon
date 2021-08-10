@@ -95,16 +95,11 @@ export default class App extends React.Component<AppProps, AppState> {
       
       // unique list of all occcurrences of unique act names and abbreviations 
       // Assumption: The full act name is referenced before the abbreviation is used
-      let actAbbArr = ActList.concat(Object.values(Abbreviations));
-      actAbbArr = actAbbArr.filter((value, index, self) => {
-        return self.indexOf(value) === index;
-      });
 
       // object to store mapping between abbreviation and URL
-      let abbURLMap = {};
       
       // change ActList to acts to use API call
-      for (let actName of actAbbArr) {
+      for (let actName of ActList) {
         // Regex to include section number with Act name.
         //
         // Example: Accountants Act, Accountants Act 11, Accountant Acts 12B
@@ -113,26 +108,25 @@ export default class App extends React.Component<AppProps, AppState> {
 
         let sectionNumberRegex = "( [0-9]{1,}[A-Z]{0,})";
         let actRegex = `${actName}${sectionNumberRegex}{0,}`;
-        
+        let abbreviationRegex = `${Abbreviations[actName]}${sectionNumberRegex}{0,}`;
         // Match whole world to make sure that abbreviations which are substrings in other abbreviations don't get caught.
         // For example: Accountants Act: AA and Accounting and Corporate Regulatory Authority Act: ACRAA
         let searchResult = body.search(actRegex, { matchWildcards: true, matchWholeWord: true });
         searchResult.load("length, text");
+        // search for all occurrences of the abbreviation of the actname
+        // Abbreviations should be searched immediately after the search for act name to reduce usage of another context.sync() 
+        let abbreviationSearchResult = body.search(abbreviationRegex, { matchWildcards: true, matchWholeWord: true });
+        abbreviationSearchResult.load("length, text")
         await context.sync();
-
+        
+        // All search results of both the actname and its abbreviations
+        let searchResultItems = searchResult.items.concat(abbreviationSearchResult.items);
+        
         // Skip expensive operations below if no instances of actName is found.
         if (searchResult.items.length > 0) {
-          let result;
-          if (actName in Abbreviations){
-            // For demo purposes using the database of URLs:
-            // result = {url: URLList[actName], changed: false};
-            result = await this.findURL(actName, dateString);
-            abbURLMap[Abbreviations[actName]] = result;
-          } else {
-            result = abbURLMap[actName];
-          }
-          
-          for (let act of searchResult.items) {
+            // let result = {url: URLList[actName], changed: false};
+          let result = await this.findURL(actName, dateString);  
+          for (let act of searchResultItems) {
             let url = result.url;
             // Enter branch if contains section number.
             if (act.text.length > actName.length) {
