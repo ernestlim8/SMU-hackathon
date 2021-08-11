@@ -28,7 +28,7 @@ const getActURL = async (page, phrase) => {
   );
   const link = await page.$eval("#searchTable div.row a", (el) => el.href);
   return link;
-}
+};
 
 const getRelevantActs = async (page, url) => {
   await page.goto(url);
@@ -84,14 +84,11 @@ const getURLs = async (page) => {
     cache[arr[i]] = link;
   }
   return cache;
-}
+};
 
 module.exports = {
   getDates,
   getActs,
-<<<<<<< HEAD
   getURLs,
-=======
   formatDate,
->>>>>>> add webscraping to get new text by date
 };

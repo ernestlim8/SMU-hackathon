@@ -6,12 +6,8 @@ const PORT = process.env.PORT || 3001;
 const app = express();
 
 const cors = require("cors");
-<<<<<<< HEAD
-const { getDates, getActs, getURLs } = require("./functions");
-=======
-const { getDates, getActs, formatDate } = require("./functions");
+const { getDates, getActs, formatDate, getURLs } = require("./functions");
 const e = require("express");
->>>>>>> add webscraping to get new text by date
 
 app.use(cors());
 
@@ -42,7 +38,7 @@ app.get("/getAllURLs", (req, res) => {
       await browser.close();
 
       // changed here will have to be checked against date first
-      res.json({ urls: urls});
+      res.json({ urls: urls });
     })();
   } catch (err) {
     console.log(err);
