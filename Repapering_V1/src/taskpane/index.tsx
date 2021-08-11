@@ -23,10 +23,7 @@ const render = (Component) => (
 /* Render application after Office initializes */
 Office.initialize = () => {
   isOfficeInitialized = true;
-  ReactDOM.render(
-    render(App),
-    document.getElementById("container")
-  );
+  ReactDOM.render(render(App), document.getElementById("container"));
 };
 
 if ((module as any).hot) {
