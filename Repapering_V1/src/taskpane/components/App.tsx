@@ -11,7 +11,7 @@ import "../../../assets/icon-80.png";
 
 import { ActList } from "../../Data/ActNames";
 import { Abbreviations } from "../../Data/Abbreviations";
-// import { URLList } from "../../Data/ActURLs"; 
+// import { URLList } from "../../Data/ActURLs";
 
 /* global Word */
 
@@ -82,22 +82,22 @@ export default class App extends React.Component<AppProps, AppState> {
       // let arr = await findURLs();
       // let acts = arr.acts
 
-      let date = `([0-9]{1,2} [a-zA-Z]* [0-9]{4})`
+      let date = `([0-9]{1,2} [a-zA-Z]* [0-9]{4})`;
 
-      let dateSearch = body.search(date, {matchWildcards: true});
+      let dateSearch = body.search(date, { matchWildcards: true });
       dateSearch.load("length, text");
 
-      await context.sync()
-      let dateString = new Date(2021, 1, 1).toDateString(); 
-      if (dateSearch.items.length > 0){
+      await context.sync();
+      let dateString = new Date(2021, 1, 1).toDateString();
+      if (dateSearch.items.length > 0) {
         dateString = dateSearch.items[0].text;
       }
-      
-      // unique list of all occcurrences of unique act names and abbreviations 
+
+      // unique list of all occcurrences of unique act names and abbreviations
       // Assumption: The full act name is referenced before the abbreviation is used
 
       // object to store mapping between abbreviation and URL
-      
+
       // change ActList to acts to use API call
       for (let actName of ActList) {
         // Regex to include section number with Act name.
@@ -114,18 +114,18 @@ export default class App extends React.Component<AppProps, AppState> {
         let searchResult = body.search(actRegex, { matchWildcards: true, matchWholeWord: true });
         searchResult.load("length, text");
         // search for all occurrences of the abbreviation of the actname
-        // Abbreviations should be searched immediately after the search for act name to reduce usage of another context.sync() 
+        // Abbreviations should be searched immediately after the search for act name to reduce usage of another context.sync()
         let abbreviationSearchResult = body.search(abbreviationRegex, { matchWildcards: true, matchWholeWord: true });
-        abbreviationSearchResult.load("length, text")
+        abbreviationSearchResult.load("length, text");
         await context.sync();
-        
+
         // All search results of both the actname and its abbreviations
         let searchResultItems = searchResult.items.concat(abbreviationSearchResult.items);
-        
+
         // Skip expensive operations below if no instances of actName is found.
         if (searchResult.items.length > 0) {
-            // let result = {url: URLList[actName], changed: false};
-          let result = await this.findURL(actName, dateString);  
+          // let result = {url: URLList[actName], changed: false};
+          let result = await this.findURL(actName, dateString);
           for (let act of searchResultItems) {
             let url = result.url;
             // Enter branch if contains section number.
@@ -156,7 +156,7 @@ export default class App extends React.Component<AppProps, AppState> {
     if (changed) {
       act.font.highlightColor = "#FFFF00";
     }
-  }
+  };
 
   render() {
     const { title, isOfficeInitialized } = this.props;
