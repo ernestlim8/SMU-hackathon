@@ -63,7 +63,7 @@ app.get("/getURL", (req, res) => {
       let dateJson = {};
 
       filteredDates.forEach(
-        (date) => (dateJson[formatDate(new Date(date))] = [])
+        (date) => (dateJson[formatDate(new Date(date))] = new Set())
       );
 
       for (let i = 0; i < amendments.length; i++) {
@@ -74,11 +74,16 @@ app.get("/getURL", (req, res) => {
           const amendmentDates = match.splice(2);
           amendmentDates.forEach((date) => {
             if (dateJson.hasOwnProperty(date)) {
-              dateJson[date].push(paragraph);
+              dateJson[date].add(paragraph);
             }
           });
         }
       }
+
+      for (const date in dateJson) {
+        dateJson[date] = Array.from(dateJson[date]);
+      }
+
       await browser.close();
       res.json({
         url: link,
