@@ -49,25 +49,25 @@ export default class App extends React.Component<AppProps, AppState> {
     return data;
   };
 
-  click = async () => {
-    return Word.run(async (context) => {
-      let result = context.document.body.search("[(]*[)]", { matchWildcards: true });
-      // Queue a command to load the search results and get the font property values.
-      context.load(result, "text, font/size");
-      result.load("text, font/size");
+  // click = async () => {
+  //   return Word.run(async (context) => {
+  //     let result = context.document.body.search("[(]*[)]", { matchWildcards: true });
+  //     // Queue a command to load the search results and get the font property values.
+  //     context.load(result, "text, font/size");
+  //     result.load("text, font/size");
 
-      await context.sync();
-      let newItems: HeroListItem[] = [];
-      for (let i = 0; i < result.items.length; i++) {
-        const text = result.items[i].text;
-        result.items[i].font.highlightColor = "#FFFF00";
-        newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1) }];
-      }
+  //     await context.sync();
+  //     let newItems: HeroListItem[] = [];
+  //     for (let i = 0; i < result.items.length; i++) {
+  //       const text = result.items[i].text;
+  //       result.items[i].font.highlightColor = "#FFFF00";
+  //       newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1), newText: "I rock", oldURL: "I am old" }];
+  //     }
 
-      this.setState({ listItems: newItems });
-      await context.sync();
-    });
-  };
+  //     this.setState({ listItems: newItems });
+  //     await context.sync();
+  //   });
+  // };
 
   link = async () => {
     console.log("Called add links");
@@ -121,11 +121,24 @@ export default class App extends React.Component<AppProps, AppState> {
 
         // All search results of both the actname and its abbreviations
         let searchResultItems = searchResult.items.concat(abbreviationSearchResult.items);
-
         // Skip expensive operations below if no instances of actName is found.
         if (searchResult.items.length > 0) {
           // let result = {url: URLList[actName], changed: false};
           let result = await this.findURL(actName, dateString);
+          console.log(result.dateMap)
+          let changedText = ""
+          for (let [key, value] of Object.entries(result.dateMap)) {
+            if (Date.parse(key) > Date.parse(dateString) && value !== []) { 
+              changedText += `${key}\n`;
+              changedText += `${value}\n`;
+            } else {
+              break;
+            }
+          }
+          changedText = changedText == "" ? `No amendments made since ${dateString}}` : changedText;
+          let newItems = this.state.listItems;
+          // var newDate = this.formatDate(dateString);
+          // var changedAct = result.dateMap[newDate]; 
           for (let act of searchResultItems) {
             let url = result.url;
             // Enter branch if contains section number.
@@ -138,13 +151,38 @@ export default class App extends React.Component<AppProps, AppState> {
               // go to the page of the act.
               url = `${url}#pr${section}-`;
             }
+            let listItem: HeroListItem = { icon: "", primaryText: act.text, 
+                                           newText: changedText , oldURL: url}
+            newItems.push(listItem); 
             this.formatURL(act, url, result.changed);
           }
+          var s = new Set();
+          newItems = newItems.filter((item) => {
+            if (s.has(item.primaryText)){
+              return false
+            }
+            s.add(item.primaryText)
+            return true
+          })
+          this.setState({ listItems: newItems });
         }
         await context.sync();
       }
     });
   };
+  
+  // formatDate = (date) => {
+  //   var d = new Date(date),
+  //     month = "" + (d.getMonth() + 1),
+  //     day = "" + d.getDate(),
+  //     year = d.getFullYear();
+  
+  //   if (month.length < 2) month = "0" + month;
+  //   // don't add leading 0 for day
+  //   if (day.length < 2) day = "0" + day;
+  
+  //   return [day, month, year].join("/");
+  // };
 
   formatURL = (act, url, changed) => {
     act.set({
@@ -170,13 +208,13 @@ export default class App extends React.Component<AppProps, AppState> {
     return (
       <div className="ms-welcome">
         <Header logo="assets/logo-filled.png" title={this.props.title} message="Welcome" />
-        <HeroList message="Discover what Office Add-ins can do for you today!" items={this.state.listItems}>
+        <HeroList message="Law Referencing has never been easier!" items={this.state.listItems}>
           <p className="ms-font-l">
-            Modify the source files, then click <b>Run</b>.
+            Modify the source files, then click <b>Add Links</b>.
           </p>
-          <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.click}>
+          {/* <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.click}>
             Run
-          </DefaultButton>
+          </DefaultButton> */}
           <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.link}>
             Add Links
           </DefaultButton>

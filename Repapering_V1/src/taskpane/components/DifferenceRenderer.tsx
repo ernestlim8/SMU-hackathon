@@ -19,6 +19,7 @@ export default class DifferenceRenderer extends React.Component<DifferencesProps
                 <p>
                     {oldURL}
                 </p>
+                <br/>
             </div>
         );
     }
