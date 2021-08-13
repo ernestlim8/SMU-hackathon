@@ -10,8 +10,8 @@ export default class DifferenceRenderer extends React.Component<DifferencesProps
     render() {
         const {newText, oldURL} = this.props;
         return (
-            <div>
-                <h3 style={{textAlign: "left"}}>New Text:</h3>
+            <div style={{textAlign: "left"}}>
+                <h3>New Text:</h3>
                 <p>
                     {newText}
                 </p>

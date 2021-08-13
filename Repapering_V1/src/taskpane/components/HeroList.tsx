@@ -1,6 +1,5 @@
 import * as React from "react";
 import { HashRouter as Router, Link, Route } from "react-router-dom";
-// import {Link} from "react-router-dom"
 import DifferenceRenderer from "./DifferenceRenderer";
 
 export interface HeroListItem {
@@ -33,18 +32,24 @@ export default class HeroList extends React.Component<HeroListProps> {
                 
     //           </li>    
     //         })
+
+    const toggle = (text) => {
+      var x = document.getElementById(text);
+      if (x !== null) {
+        x.style.display = "none";
+      }
+    }
     
     const listItems = items.map((item, index) => (
       <Router>
         <li className="ms-ListItem" key={index}>
           <h2 className={`ms-Icon ms-Icon--${item.icon}`}></h2>
-          <Link to="/1" style={{color: "black", fontSize: 20, alignText: "left"}}>
+          <Link to={`/${item.primaryText}`} onClick={toggle(item.primaryText)} style={{color: "black", fontSize: 20, alignText: "left"}}>
             {item.primaryText}
           </Link>
         </li>
-        {/* <br/> */}
-        <Route exact path='/1'>
-          <div style={{alignContent: "left"}}>
+        <Route exact path={`/${item.primaryText}`}>
+          <div id={item.primaryText} style={{alignContent: "left"}}>
             <DifferenceRenderer newText={item.newText} oldURL={item.oldURL}/>
           </div>
         </Route>
