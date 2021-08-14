@@ -22,6 +22,7 @@ export interface AppProps {
 
 export interface AppState {
   listItems: HeroListItem[];
+  shouldShowLinks: boolean;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -29,14 +30,19 @@ export default class App extends React.Component<AppProps, AppState> {
     super(props, context);
     this.state = {
       listItems: [],
+      shouldShowLinks: false,
     };
   }
 
   componentDidMount() {
     this.setState({
       listItems: [],
+      shouldShowLinks: false,
     });
   }
+
+  TAG_NAME = "link";
+  HIGHLIGHT_COLOR = "#FFFF91";
 
   findURL = async (act: string, date: string) => {
     const promise = axios.get("http://localhost:3001/getURL", {
@@ -153,9 +159,46 @@ export default class App extends React.Component<AppProps, AppState> {
         color: "Black",
       },
     });
+    var contentControl = act.insertContentControl();
+    contentControl.tag = this.TAG_NAME;
     if (changed) {
-      act.font.highlightColor = "#FFFF00";
+      act.font.highlightColor = this.HIGHLIGHT_COLOR;
+      contentControl.color = this.HIGHLIGHT_COLOR;
     }
+  };
+
+  updateLinksAppearance = async () => {
+    console.log(this.state.shouldShowLinks ? "called hideLinks" : "called showLinks");
+    return Word.run(async (context) => {
+      const allLinks = context.document.contentControls.getByTag(this.TAG_NAME);
+      allLinks.load("text, color");
+      await context.sync();
+      for (let link of allLinks.items) {
+        const text = link.getRange();
+        if (this.state.shouldShowLinks) {
+          const highlightColor = link.color === "#000000" ? null : link.color;
+          text.set({
+            font: {
+              underline: "Single",
+              highlightColor: highlightColor,
+            },
+          });
+        } else {
+          text.set({
+            font: {
+              underline: "None",
+              highlightColor: null,
+            },
+          });
+        }
+      }
+    });
+  };
+
+  handleToggleLinksVisibility = () => {
+    const oldState = this.state.shouldShowLinks;
+    this.setState({ shouldShowLinks: !oldState });
+    this.updateLinksAppearance();
   };
 
   render() {
@@ -166,6 +209,20 @@ export default class App extends React.Component<AppProps, AppState> {
         <Progress title={title} logo="assets/logo-filled.png" message="Please sideload your addin to see app body." />
       );
     }
+
+    const renderShowLinksCheckbox = () => {
+      return (
+        <label>
+          <input
+            name="isGoing"
+            type="checkbox"
+            checked={this.state.shouldShowLinks}
+            onChange={this.handleToggleLinksVisibility}
+          />
+          Show links
+        </label>
+      );
+    };
 
     return (
       <div className="ms-welcome">
@@ -182,6 +239,7 @@ export default class App extends React.Component<AppProps, AppState> {
           >
             Add Links
           </DefaultButton>
+          {renderShowLinksCheckbox()}
         </HeroList>
       </div>
     );
