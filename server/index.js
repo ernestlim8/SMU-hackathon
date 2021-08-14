@@ -116,7 +116,7 @@ app.get("/getURL", (req, res) => {
         url: link,
         oldURL: oldURL,
         changed: filteredDates.length > 0,
-        dateMap: sections,
+        sections: sections,
       });
     })();
   } catch (err) {
