@@ -49,7 +49,6 @@ export default class App extends React.Component<AppProps, AppState> {
     return data;
   };
 
-
   link = async () => {
     console.log("Called add links");
     return Word.run(async (context) => {
@@ -106,10 +105,10 @@ export default class App extends React.Component<AppProps, AppState> {
         if (searchResult.items.length > 0) {
           // let result = {url: URLList[actName], changed: false};
           let result = await this.findURL(actName, dateString);
-          console.log(result.dateMap)
-          let changedText = ""
+          console.log(result.dateMap);
+          let changedText = "";
           for (let [key, value] of Object.entries(result.dateMap)) {
-            if (Date.parse(key) > Date.parse(dateString) && value !== []) { 
+            if (Date.parse(key) > Date.parse(dateString) && value !== []) {
               changedText += `${key}\n`;
               changedText += `${value}\n`;
             } else {
@@ -119,7 +118,7 @@ export default class App extends React.Component<AppProps, AppState> {
           changedText = changedText == "" ? `No amendments made since ${dateString}` : changedText;
           let newItems = this.state.listItems;
           // var newDate = this.formatDate(dateString);
-          // var changedAct = result.dateMap[newDate]; 
+          // var changedAct = result.dateMap[newDate];
           for (let act of searchResultItems) {
             let url = result.url;
             // Enter branch if contains section number.
@@ -132,23 +131,27 @@ export default class App extends React.Component<AppProps, AppState> {
               // go to the page of the act.
               url = `${url}#pr${section}-`;
             }
-            // sections here is currently hardcoded. Waiting for backend to pass up an object 
-            // with section number to array of amendments 
-            let listItem: HeroListItem = { icon: "", primaryText: act.text, 
-                                           newText: changedText , oldURL: url, 
-                                           sections: {s1: ["Here is my change", "I rcok"], s2:["Hey there"]}}
-            newItems.push(listItem); 
+            // sections here is currently hardcoded. Waiting for backend to pass up an object
+            // with section number to array of amendments
+            let listItem: HeroListItem = {
+              icon: "",
+              primaryText: actName,
+              newText: changedText,
+              oldURL: url,
+              sections: { s1: ["Here is my change", "I rcok"], s2: ["Hey there"] },
+            };
+            newItems.push(listItem);
             this.formatURL(act, url, result.changed);
           }
           // needed to make sure duplicate references to the same act don't turn up on the UI
           var s = new Set();
           newItems = newItems.filter((item) => {
-            if (s.has(item.primaryText)){
-              return false
+            if (s.has(item.primaryText)) {
+              return false;
             }
-            s.add(item.primaryText)
-            return true
-          })
+            s.add(item.primaryText);
+            return true;
+          });
           this.setState({ listItems: newItems });
         }
         await context.sync();
@@ -182,12 +185,14 @@ export default class App extends React.Component<AppProps, AppState> {
         <Header logo="assets/logo-filled.png" title={this.props.title} message="Welcome" />
         <HeroList message="Law Referencing has never been easier!" items={this.state.listItems}>
           <p className="ms-font-l">
-            Modify the source files, then click <b>Add Links</b>.
+            Click <b>Add Links</b> to link the laws in this document and view any amendments made since the drafting of
+            this document.
           </p>
-          {/* <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.click}>
-            Run
-          </DefaultButton> */}
-          <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={() => this.link()}>
+          <DefaultButton
+            className="ms-welcome__action"
+            iconProps={{ iconName: "ChevronRight" }}
+            onClick={() => this.link()}
+          >
             Add Links
           </DefaultButton>
         </HeroList>
