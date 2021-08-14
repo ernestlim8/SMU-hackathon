@@ -17,7 +17,6 @@ const getDates = async (page, phrase) => {
     "#mobileDocTimeline .timestamp a:last-child",
     (arr) => arr.map((el) => el.innerText)
   );
-  await page.click(".toc-panel.mobile-timeline a");
 
   return { link, dates };
 };
@@ -86,9 +85,24 @@ const getURLs = async (page) => {
   return cache;
 };
 
+const getSection = async (el) => {
+  let curr = el;
+  while (curr != null) {
+    let classString = await (await curr.getProperty("className")).jsonValue();
+    if (classString == "prov1Txt") {
+      const sectionNo = await curr.$eval("strong", (el) => el.textContent);
+      return sectionNo.substring(0, sectionNo.length - 1);
+    } else {
+      curr = (await curr.getProperty("parentElement")).asElement();
+    }
+  }
+  return null;
+};
+
 module.exports = {
   getDates,
   getActs,
   getURLs,
   formatDate,
+  getSection,
 };
