@@ -62,7 +62,7 @@ const DifferenceRenderer = (props) => {
         aria-controls="panel1a-content"
         id="panel1a-header"
       >
-        <Typography className={classes.heading}>{key}</Typography>
+        <Typography className={classes.heading}>{`Section ${key}`}</Typography>
       </AccordionSummary>
       { key in props.oldAct &&
         props.oldAct[key].map((key, index) => (
