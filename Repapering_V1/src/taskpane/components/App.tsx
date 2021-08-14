@@ -46,6 +46,19 @@ export default class App extends React.Component<AppProps, AppState> {
 
   TAG_NAME = "link";
   HIGHLIGHT_COLOR = "#FFFF91";
+  sectionNumberRegex = "([0-9]{1,}[A-Z]{0,})";
+  nonBreakingSpace = String.fromCharCode(160);
+  allSearchQueries = (actName) => {
+    return [
+      `${actName}`,
+      // Abbreviation Regex,
+      `${Abbreviations[actName]}${this.sectionNumberRegex}{0,}`,
+      // `Section ${this.sectionNumberRegex} of the ${actName}`,
+      // `Section ${this.sectionNumberRegex} ${actName}`,
+      // `s${this.nonBreakingSpace}${this.sectionNumberRegex} of the ${actName}`,
+      // `s${this.nonBreakingSpace}${this.sectionNumberRegex} ${actName}`,
+    ];
+  };
 
   findURL = async (act: string, date: string) => {
     const promise = axios.get("http://localhost:3001/getURL", {
@@ -58,24 +71,32 @@ export default class App extends React.Component<AppProps, AppState> {
     return data;
   };
 
-  click = async () => {
-    return Word.run(async (context) => {
-      let result = context.document.body.search("[(]*[)]", { matchWildcards: true });
-      // Queue a command to load the search results and get the font property values.
-      context.load(result, "text, font/size");
-      result.load("text, font/size");
-
-      await context.sync();
-      let newItems: HeroListItem[] = [];
-      for (let i = 0; i < result.items.length; i++) {
-        const text = result.items[i].text;
-        result.items[i].font.highlightColor = "#FFFF00";
-        newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1) }];
+  hyperlinkActs = (actName: string, dateString: string, allInstances: Word.Range[]) => {
+    console.log(`fetching url for ${actName}...`);
+    let result = await this.findURL(actName, dateString);
+    for (let actInstance of allInstances) {
+      let url = result.url;
+      // Enter branch if contains section number.
+      if (actInstance.text.length > actName.length) {
+        const section = actInstance.text.split(" ").pop();
+        // Example url: https://sso.agc.gov.sg/Act/AA2004#pr12A-
+        //
+        // It is okay if the section number is invalid. In this case the url (although unnecessarily longer)
+        //  will still go to the page of the act.
+        url = `${url}#pr${section}-`;
       }
+      this.formatURL(actInstance, url, result.changed);
+    }
+  };
 
-      this.setState({ listItems: newItems });
-      await context.sync();
-    });
+  searchForAct = (body, actName) => {
+    const allSearchResults: Word.RangeCollection[] = [];
+    for (let searchQuery of this.allSearchQueries(actName)) {
+      let searchResult = body.search(searchQuery, { matchWildcards: true, matchWholeWord: true });
+      searchResult.load("length, text");
+      allSearchResults.push(searchResult);
+    }
+    return allSearchResults;
   };
 
   link = async () => {
@@ -103,77 +124,39 @@ export default class App extends React.Component<AppProps, AppState> {
         dateString = dateSearch.items[0].text;
       }
 
-      // unique list of all occcurrences of unique act names and abbreviations
-      // Assumption: The full act name is referenced before the abbreviation is used
-
-      // object to store mapping between abbreviation and URL
-
-      // change ActList to acts to use API call
+      let searchResultsMap: Map<string, Word.RangeCollection[]> = new Map();
+      console.log("searching for acts...");
       for (let actName of ActList) {
-        const sectionNumberRegex = "[0-9]{1,}[A-Z]{0,}";
-        const nonBreakingSpace = String.fromCharCode(160);
-        const allSearchQueries = [
-          `${actName}`,
-          `(Section ${sectionNumberRegex} of the )${actName}`,
-          `(Section ${sectionNumberRegex} )${actName}`,
-          `(s${nonBreakingSpace}${sectionNumberRegex} of the )${actName}`,
-          `(s${nonBreakingSpace}${sectionNumberRegex} )${actName}`,
-          // Abbreviation Regex,
-          `${Abbreviations[actName]}${sectionNumberRegex}{0,}`,
-        ];
-        let allSearchResults = [];
-        for (let searchQuery in allSearchQueries) {
-          let searchResult = body.search(searchQuery, { matchWildcards: true, matchWholeWord: true });
-          searchResult.load("length, text");
-          allSearchResults.push(searchResult);
-        }
-        // Minimise number of calls of context.sync()
-        await context.sync();
-        let allInstances: Word.Range[];
-        allSearchResults.forEach((searchResult) => {
-          allInstances.concat(searchResult.items);
-        });
-        console.log(allInstances);
-
-        // // Match whole world to make sure that abbreviations which are substrings in other abbreviations don't get caught.
-        // // For example: Accountants Act: AA and Accounting and Corporate Regulatory Authority Act: ACRAA
-        // let searchResult = body.search(actRegex, { matchWildcards: true, matchWholeWord: true });
-        // searchResult.load("length, text");
-        // // search for all occurrences of the abbreviation of the actname
-        // // Abbreviations should be searched immediately after the search for act name to reduce usage of another context.sync()
-        // let abbreviationSearchResult = body.search(abbreviationRegex, { matchWildcards: true, matchWholeWord: true });
-        // abbreviationSearchResult.load("length, text");
-        // await context.sync();
-
-        // // All search results of both the actname and its abbreviations
-        // let searchResultItems = searchResult.items.concat(abbreviationSearchResult.items);
-
-        // Skip expensive operations below if no instances of actName is found.
-        if (allInstances.length > 0) {
-          // let result = {url: URLList[actName], changed: false};
-          let result = await this.findURL(actName, dateString);
-          for (let act of allInstances) {
-            let url = result.url;
-            // Enter branch if contains section number.
-            if (act.text.length > actName.length) {
-              const section = act.text.split(" ").pop();
-              // Example url: https://sso.agc.gov.sg/Act/AA2004#pr12A-
-              //
-              // It is okay if the section number is invalid. In this case
-              // the url (although unnecessarily longer) will still
-              // go to the page of the act.
-              url = `${url}#pr${section}-`;
-            }
-            this.formatURL(act, url, result.changed);
-          }
-        }
-        await context.sync();
-        this.setState({ isLoading: false });
+        searchResultsMap.set(actName, this.searchForAct(body, actName));
       }
+      await context.sync();
+      console.log("search complete");
+      console.log("formatting acts...");
+      const promise = new Promise<void>((resolve) => {
+        var counter = 0;
+        searchResultsMap.forEach(async (searchResults: Word.RangeCollection[], actName) => {
+          for (let searchResult of searchResults) {
+            const allInstances = searchResult.items;
+            if (allInstances.length > 0) {
+              this.hyperlinkActs(actName, dateString, allInstances);
+            }
+          }
+          counter += 1;
+          if (counter >= 538) {
+            resolve();
+          }
+        });
+      });
+      promise.then(() => {
+        // await context.sync();
+        this.setState({ isLoading: false });
+        console.log("add links complete");
+      });
     });
   };
 
-  formatURL = (act, url, changed) => {
+  formatURL = (act: Word.Range, url: string, changed: boolean) => {
+    console.log(`formatting ${act.text}`);
     act.set({
       hyperlink: url,
       font: {
@@ -253,9 +236,6 @@ export default class App extends React.Component<AppProps, AppState> {
           <p className="ms-font-l">
             Modify the source files, then click <b>Run</b>.
           </p>
-          <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.click}>
-            Run
-          </DefaultButton>
           {this.state.isLoading ? (
             <CircularProgress color="secondary" />
           ) : (
