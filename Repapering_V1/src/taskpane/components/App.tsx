@@ -49,25 +49,6 @@ export default class App extends React.Component<AppProps, AppState> {
     return data;
   };
 
-  // click = async () => {
-  //   return Word.run(async (context) => {
-  //     let result = context.document.body.search("[(]*[)]", { matchWildcards: true });
-  //     // Queue a command to load the search results and get the font property values.
-  //     context.load(result, "text, font/size");
-  //     result.load("text, font/size");
-
-  //     await context.sync();
-  //     let newItems: HeroListItem[] = [];
-  //     for (let i = 0; i < result.items.length; i++) {
-  //       const text = result.items[i].text;
-  //       result.items[i].font.highlightColor = "#FFFF00";
-  //       newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1), newText: "I rock", oldURL: "I am old" }];
-  //     }
-
-  //     this.setState({ listItems: newItems });
-  //     await context.sync();
-  //   });
-  // };
 
   link = async () => {
     console.log("Called add links");
@@ -135,7 +116,7 @@ export default class App extends React.Component<AppProps, AppState> {
               break;
             }
           }
-          changedText = changedText == "" ? `No amendments made since ${dateString}}` : changedText;
+          changedText = changedText == "" ? `No amendments made since ${dateString}` : changedText;
           let newItems = this.state.listItems;
           // var newDate = this.formatDate(dateString);
           // var changedAct = result.dateMap[newDate]; 
@@ -151,11 +132,15 @@ export default class App extends React.Component<AppProps, AppState> {
               // go to the page of the act.
               url = `${url}#pr${section}-`;
             }
+            // sections here is currently hardcoded. Waiting for backend to pass up an object 
+            // with section number to array of amendments 
             let listItem: HeroListItem = { icon: "", primaryText: act.text, 
-                                           newText: changedText , oldURL: url}
+                                           newText: changedText , oldURL: url, 
+                                           sections: {s1: ["Here is my change", "I rcok"], s2:["Hey there"]}}
             newItems.push(listItem); 
             this.formatURL(act, url, result.changed);
           }
+          // needed to make sure duplicate references to the same act don't turn up on the UI
           var s = new Set();
           newItems = newItems.filter((item) => {
             if (s.has(item.primaryText)){
@@ -170,19 +155,6 @@ export default class App extends React.Component<AppProps, AppState> {
       }
     });
   };
-  
-  // formatDate = (date) => {
-  //   var d = new Date(date),
-  //     month = "" + (d.getMonth() + 1),
-  //     day = "" + d.getDate(),
-  //     year = d.getFullYear();
-  
-  //   if (month.length < 2) month = "0" + month;
-  //   // don't add leading 0 for day
-  //   if (day.length < 2) day = "0" + day;
-  
-  //   return [day, month, year].join("/");
-  // };
 
   formatURL = (act, url, changed) => {
     act.set({
@@ -215,7 +187,7 @@ export default class App extends React.Component<AppProps, AppState> {
           {/* <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.click}>
             Run
           </DefaultButton> */}
-          <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.link}>
+          <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={() => this.link()}>
             Add Links
           </DefaultButton>
         </HeroList>

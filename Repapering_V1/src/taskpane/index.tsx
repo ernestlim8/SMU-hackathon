@@ -10,7 +10,7 @@ initializeIcons();
 
 let isOfficeInitialized = false;
 
-const title = "Contoso Task Pane Add-in";
+const title = "Law referencing plugin";
 
 const render = (Component) => (
   <AppContainer>

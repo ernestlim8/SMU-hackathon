@@ -1,12 +1,18 @@
 import * as React from "react";
-import { HashRouter as Router, Link, Route } from "react-router-dom";
 import DifferenceRenderer from "./DifferenceRenderer";
+import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import Typography from '@material-ui/core/Typography';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
 export interface HeroListItem {
   icon: string;
   primaryText: string;
   newText: string;
-  oldURL: string
+  oldURL: string;
+  sections: {}
 }
 
 export interface HeroListProps {
@@ -14,54 +20,55 @@ export interface HeroListProps {
   items: HeroListItem[];
 }
 
-export default class HeroList extends React.Component<HeroListProps> {
-  render() {
-    const { children, items, message } = this.props;
-    // console.log(items)
-    // const renderLinks = items.map((item, index) => {
-    //           console.log(item);
-    //           <li className="ms-ListItem" key={index}>
-    //             <i className={`ms-Icon ms-Icon--${item.icon}`}></i>
-    //               <Link to={`/${item.primaryText}`}>
-    //                 {item.primaryText}
-    //               </Link>
-    //               <Route exact path={`/${item.primaryText}`}
-    //                 component={() => {<DifferenceRenderer newText={item.primaryText} oldURL={item.primaryText}/>}}
-    //               >
-    //               </Route>
-                
-    //           </li>    
-    //         })
+export interface HeroListState {
+  show: boolean[];
+}
 
-    const toggle = (text) => {
-      var x = document.getElementById(text);
-      if (x !== null) {
-        x.style.display = "none";
-      }
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      width: '100%',
+    },
+    heading: {
+      fontSize: theme.typography.pxToRem(20),
+      fontWeight: theme.typography.fontWeightRegular,
+      color: "white"
+    },
+    summaryBox: {
+      backgroundColor: "#B8B5FF"
     }
-    
+  }),
+);
+
+const HeroList = (props) => {
+    const classes = useStyles();
+
+    const { children, items, message } = props;
+
     const listItems = items.map((item, index) => (
-      <Router>
-        <li className="ms-ListItem" key={index}>
-          <h2 className={`ms-Icon ms-Icon--${item.icon}`}></h2>
-          <Link to={`/${item.primaryText}`} onClick={toggle(item.primaryText)} style={{color: "black", fontSize: 20, alignText: "left"}}>
-            {item.primaryText}
-          </Link>
-        </li>
-        <Route exact path={`/${item.primaryText}`}>
-          <div id={item.primaryText} style={{alignContent: "left"}}>
-            <DifferenceRenderer newText={item.newText} oldURL={item.oldURL}/>
-          </div>
-        </Route>
-      </Router>
-    ));
+      <Accordion className={classes.summaryBox} id={index}>
+        <AccordionSummary
+            expandIcon={<ExpandMoreIcon />}
+            aria-controls="panel1a-content"
+            id="panel1a-header"
+        >
+          <Typography className={classes.heading}>{item.primaryText}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <DifferenceRenderer newText={item.newText} oldURL={item.oldURL} sections={item.sections}/>
+        </AccordionDetails>
+      </Accordion>
+    ))
 
     return (
       <main className="ms-welcome__main">
         <h2 className="ms-font-xl ms-fontWeight-semilight ms-fontColor-neutralPrimary ms-u-slideUpIn20">{message}</h2>
-        <ul className="ms-List ms-welcome__features ms-u-slideUpIn10">{listItems}</ul>
-        {children}  
+        <div className={classes.root}>
+          {listItems}
+          {children}
+        </div>  
       </main>
     );
-  }
 }
+
+export default HeroList;
