@@ -9,8 +9,9 @@
   "config": {
     "app_to_debug": "word",
     "app_type_to_debug": "desktop",
-    "dev_server_port": 3000
-    },
+    "dev_server_port": 3000,
+    "document": "https://nusu-my.sharepoint.com/:w:/r/personal/e0425498_u_nus_edu/_layouts/15/Doc.aspx?sourcedoc=%7B0C5ED060-C871-4425-9BF1-D9DC56ED956C%7D&file=Document.docx&wdOrigin=OFFICECOM-WEB.START.REC&ct=1628400101808&action=default&mobileredirect=true"
+  },
   "scripts": {
     "build": "webpack -p --mode production --https false",
     "build:dev": "webpack --mode development --https false",
