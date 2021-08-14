@@ -8,7 +8,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 export interface DifferencesProps {
   newText: string;
-  oldURL: string;
+  oldAct: {};
   sections: {};
 }
 
@@ -37,6 +37,18 @@ const useStyles = makeStyles((theme: Theme) =>
       color: "#132C33",
       fontSize: theme.typography.pxToRem(14),
     },
+    changesBox: {
+        backgroundColor: "#E6FFEC"
+    },
+    oldTextBox: {
+        backgroundColor: "#FFEEF0"
+    },
+    changesBoxText: {
+        color: "green"
+    },
+    oldBoxText: {
+        color: "red"
+    }
   })
 );
 
@@ -52,12 +64,20 @@ const DifferenceRenderer = (props) => {
       >
         <Typography className={classes.heading}>{key}</Typography>
       </AccordionSummary>
+      { key in props.oldAct &&
+        props.oldAct[key].map((key, index) => (
+            <AccordionDetails className={classes.infoBox}>
+                <Typography className={classes.oldBoxText} id={index}>
+                    {key}
+                </Typography>
+            </AccordionDetails>
+        ))}   
       {props.sections[key].map((key, index) => (
-        <AccordionDetails className={classes.infoBox}>
-          <Typography className={classes.infoText} id={index}>
-            {key}
-          </Typography>
-        </AccordionDetails>
+            <AccordionDetails className={classes.infoBox}>
+                <Typography className={classes.changesBoxText} id={index}>
+                    {key}
+                </Typography>
+            </AccordionDetails>
       ))}
     </Accordion>
   ));

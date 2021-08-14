@@ -11,6 +11,7 @@ import "../../../assets/icon-80.png";
 
 import { ActList } from "../../Data/ActNames";
 import { Abbreviations } from "../../Data/Abbreviations";
+import { OldActText } from "../../Data/OldActText"; 
 // import { URLList } from "../../Data/ActURLs";
 
 /* global Word */
@@ -129,7 +130,7 @@ export default class App extends React.Component<AppProps, AppState> {
             let listItem: HeroListItem = {
               icon: "",
               primaryText: actName,
-              oldURL: url,
+              oldAct: OldActText[actName]["sections"],
               sections: result.sections 
               // { s1: ["Here is my change", "I rcok"], s2: ["Hey there"] },
             };
@@ -232,14 +233,17 @@ export default class App extends React.Component<AppProps, AppState> {
             Click <b>Add Links</b> to link the laws in this document and view any amendments made since the drafting of
             this document.
           </p>
-          <DefaultButton
-            className="ms-welcome__action"
-            iconProps={{ iconName: "ChevronRight" }}
-            onClick={() => this.link()}
-          >
-            Add Links
-          </DefaultButton>
-          {renderShowLinksCheckbox()}
+          <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <DefaultButton
+              className="ms-welcome__action"
+              iconProps={{ iconName: "ChevronRight" }}
+              onClick={() => this.link()}
+            >
+              Add Links
+            </DefaultButton>
+            <br/>
+            {renderShowLinksCheckbox()}
+          </div>
         </HeroList>
       </div>
     );

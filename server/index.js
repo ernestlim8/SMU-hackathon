@@ -58,7 +58,7 @@ app.get("/getURL", (req, res) => {
       const browser = await puppeteer.launch({ headless: true });
       const page = await browser.newPage();
       const { link, dates } = await getDates(page, req.query.act);
-
+      await page.setDefaultNavigationTimeout(0);
       // get old dates
       let oldDate = Date.parse(req.query.date);
 

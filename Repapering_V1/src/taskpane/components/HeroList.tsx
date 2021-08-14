@@ -10,7 +10,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 export interface HeroListItem {
   icon: string;
   primaryText: string;
-  oldURL: string;
+  oldAct: {};
   sections: {};
 }
 
@@ -51,7 +51,7 @@ const HeroList = (props) => {
         <Typography className={classes.heading}>{item.primaryText}</Typography>
       </AccordionSummary>
       <AccordionDetails>
-        <DifferenceRenderer newText={item.newText} oldURL={item.oldURL} sections={item.sections} />
+        <DifferenceRenderer newText={item.newText} oldAct={item.oldAct} sections={item.sections} />
       </AccordionDetails>
     </Accordion>
   ));
