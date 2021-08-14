@@ -22,18 +22,20 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
     },
     heading: {
-      fontSize: theme.typography.pxToRem(15),
-      color: "#575757",
+      fontSize: theme.typography.pxToRem(14),
+      color: "white",
       fontWeight: theme.typography.fontWeightRegular,
     },
     summaryBox: {
-      backgroundColor: "#CCF2F4",
+      backgroundColor: "#96BAFF",
+      boxShadow: "none",
     },
     infoBox: {
-      backgroundColor: "#E4FBFF",
+      backgroundColor: "#f2fdff",
     },
     infoText: {
-      color: "132C33",
+      color: "#132C33",
+      fontSize: theme.typography.pxToRem(14),
     },
   })
 );

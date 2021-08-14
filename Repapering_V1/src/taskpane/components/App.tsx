@@ -185,7 +185,8 @@ export default class App extends React.Component<AppProps, AppState> {
         <Header logo="assets/logo-filled.png" title={this.props.title} message="Welcome" />
         <HeroList message="Law Referencing has never been easier!" items={this.state.listItems}>
           <p className="ms-font-l">
-            Modify the source files, then click <b>Add Links</b>.
+            Click <b>Add Links</b> to link the laws in this document and view any amendments made since the drafting of
+            this document.
           </p>
           <DefaultButton
             className="ms-welcome__action"
