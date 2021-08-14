@@ -1,6 +1,7 @@
 import * as React from "react";
 import axios from "axios";
 import { DefaultButton } from "@fluentui/react";
+import { CircularProgress, Grid } from "@material-ui/core";
 import Header from "./Header";
 import HeroList, { HeroListItem } from "./HeroList";
 import Progress from "./Progress";
@@ -24,6 +25,7 @@ export interface AppProps {
 export interface AppState {
   listItems: HeroListItem[];
   shouldShowLinks: boolean;
+  isLoading: boolean;
 }
 
 export default class App extends React.Component<AppProps, AppState> {
@@ -32,6 +34,7 @@ export default class App extends React.Component<AppProps, AppState> {
     this.state = {
       listItems: [],
       shouldShowLinks: false,
+      isLoading: false,
     };
   }
 
@@ -58,6 +61,7 @@ export default class App extends React.Component<AppProps, AppState> {
 
   link = async () => {
     console.log("Called add links");
+    this.setState({ shouldShowLinks: true, isLoading: true });
     return Word.run(async (context) => {
       var body = context.document.body;
       // Make request to backend for all the URLS
@@ -149,6 +153,7 @@ export default class App extends React.Component<AppProps, AppState> {
           this.setState({ listItems: newItems });
         }
         await context.sync();
+        this.setState({ isLoading: false });
       }
     });
   };
@@ -233,17 +238,22 @@ export default class App extends React.Component<AppProps, AppState> {
             Click <b>Add Links</b> to link the laws in this document and view any amendments made since the drafting of
             this document.
           </p>
-          <div style={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-            <DefaultButton
-              className="ms-welcome__action"
-              iconProps={{ iconName: "ChevronRight" }}
-              onClick={() => this.link()}
-            >
-              Add Links
-            </DefaultButton>
-            <br/>
-            {renderShowLinksCheckbox()}
-          </div>
+          {this.state.isLoading ? (
+            <CircularProgress color="secondary" />
+          ) : (
+            <Grid container direction="column" alignItems="center">
+              <Grid item xs={6}>
+                <DefaultButton
+                  className="ms-welcome__action"
+                  iconProps={{ iconName: "ChevronRight" }}
+                  onClick={this.link}
+                >
+                  Add Links
+                </DefaultButton>
+              </Grid>
+              {renderShowLinksCheckbox()}
+            </Grid>
+          )}
         </HeroList>
       </div>
     );
