@@ -10,7 +10,6 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 export interface HeroListItem {
   icon: string;
   primaryText: string;
-  newText: string;
   oldURL: string;
   sections: {};
 }

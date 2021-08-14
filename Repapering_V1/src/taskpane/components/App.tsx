@@ -103,22 +103,9 @@ export default class App extends React.Component<AppProps, AppState> {
         let searchResultItems = searchResult.items.concat(abbreviationSearchResult.items);
         // Skip expensive operations below if no instances of actName is found.
         if (searchResult.items.length > 0) {
-          // let result = {url: URLList[actName], changed: false};
           let result = await this.findURL(actName, dateString);
-          console.log(result.dateMap);
-          let changedText = "";
-          for (let [key, value] of Object.entries(result.dateMap)) {
-            if (Date.parse(key) > Date.parse(dateString) && value !== []) {
-              changedText += `${key}\n`;
-              changedText += `${value}\n`;
-            } else {
-              break;
-            }
-          }
-          changedText = changedText == "" ? `No amendments made since ${dateString}` : changedText;
           let newItems = this.state.listItems;
-          // var newDate = this.formatDate(dateString);
-          // var changedAct = result.dateMap[newDate];
+          console.log(result)
           for (let act of searchResultItems) {
             let url = result.url;
             // Enter branch if contains section number.
@@ -136,9 +123,9 @@ export default class App extends React.Component<AppProps, AppState> {
             let listItem: HeroListItem = {
               icon: "",
               primaryText: actName,
-              newText: changedText,
               oldURL: url,
-              sections: { s1: ["Here is my change", "I rcok"], s2: ["Hey there"] },
+              sections: result.sections 
+              // { s1: ["Here is my change", "I rcok"], s2: ["Hey there"] },
             };
             newItems.push(listItem);
             this.formatURL(act, url, result.changed);
