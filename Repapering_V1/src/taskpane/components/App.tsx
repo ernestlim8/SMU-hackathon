@@ -12,6 +12,7 @@ import "../../../assets/icon-80.png";
 
 import { ActList } from "../../Data/ActNames";
 import { Abbreviations } from "../../Data/Abbreviations";
+import { OldActText } from "../../Data/OldActText"; 
 // import { URLList } from "../../Data/ActURLs";
 
 /* global Word */
@@ -56,26 +57,6 @@ export default class App extends React.Component<AppProps, AppState> {
     });
     const data = promise.then((res) => res.data);
     return data;
-  };
-
-  click = async () => {
-    return Word.run(async (context) => {
-      let result = context.document.body.search("[(]*[)]", { matchWildcards: true });
-      // Queue a command to load the search results and get the font property values.
-      context.load(result, "text, font/size");
-      result.load("text, font/size");
-
-      await context.sync();
-      let newItems: HeroListItem[] = [];
-      for (let i = 0; i < result.items.length; i++) {
-        const text = result.items[i].text;
-        result.items[i].font.highlightColor = "#FFFF00";
-        newItems = [...newItems, { icon: "", primaryText: text.substring(1, text.length - 1) }];
-      }
-
-      this.setState({ listItems: newItems });
-      await context.sync();
-    });
   };
 
   link = async () => {
@@ -131,12 +112,11 @@ export default class App extends React.Component<AppProps, AppState> {
 
         // All search results of both the actname and its abbreviations
         let searchResultItems = searchResult.items.concat(abbreviationSearchResult.items);
-
         // Skip expensive operations below if no instances of actName is found.
         if (searchResult.items.length > 0) {
-          // let result = {url: URLList[actName], changed: false};
           let result = await this.findURL(actName, dateString);
-          console.log(`url: ${result}`);
+          let newItems = this.state.listItems;
+          console.log(result)
           for (let act of searchResultItems) {
             let url = result.url;
             // Enter branch if contains section number.
@@ -149,8 +129,28 @@ export default class App extends React.Component<AppProps, AppState> {
               // go to the page of the act.
               url = `${url}#pr${section}-`;
             }
+            // sections here is currently hardcoded. Waiting for backend to pass up an object
+            // with section number to array of amendments
+            let listItem: HeroListItem = {
+              icon: "",
+              primaryText: actName,
+              oldAct: OldActText[actName]["sections"],
+              sections: result.sections 
+              // { s1: ["Here is my change", "I rcok"], s2: ["Hey there"] },
+            };
+            newItems.push(listItem);
             this.formatURL(act, url, result.changed);
           }
+          // needed to make sure duplicate references to the same act don't turn up on the UI
+          var s = new Set();
+          newItems = newItems.filter((item) => {
+            if (s.has(item.primaryText)) {
+              return false;
+            }
+            s.add(item.primaryText);
+            return true;
+          });
+          this.setState({ listItems: newItems });
         }
         await context.sync();
         this.setState({ isLoading: false });
@@ -165,7 +165,6 @@ export default class App extends React.Component<AppProps, AppState> {
         color: "Black",
       },
     });
-    // Insert Content Control to set up for hide/show links.
     var contentControl = act.insertContentControl();
     contentControl.tag = this.TAG_NAME;
     if (changed) {
@@ -234,17 +233,15 @@ export default class App extends React.Component<AppProps, AppState> {
     return (
       <div className="ms-welcome">
         <Header logo="assets/logo-filled.png" title={this.props.title} message="Welcome" />
-        <HeroList message="Discover what Office Add-ins can do for you today!" items={this.state.listItems}>
+        <HeroList message="Law Referencing has never been easier!" items={this.state.listItems}>
           <p className="ms-font-l">
-            Modify the source files, then click <b>Run</b>.
+            Click <b>Add Links</b> to link the laws in this document and view any amendments made since the drafting of
+            this document.
           </p>
-          <DefaultButton className="ms-welcome__action" iconProps={{ iconName: "ChevronRight" }} onClick={this.click}>
-            Run
-          </DefaultButton>
           {this.state.isLoading ? (
             <CircularProgress color="secondary" />
           ) : (
-            <Grid container direction="column">
+            <Grid container direction="column" alignItems="center">
               <Grid item xs={6}>
                 <DefaultButton
                   className="ms-welcome__action"
